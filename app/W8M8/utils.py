@@ -38,9 +38,10 @@ def create_new_workout():
     sheets = get_google_sheets_service()
     drive = get_google_drive_service()
     workout_logs_folder_id = '0B5Z-q6OlTHYsQUw3Mk81bGFsMVU'
-    timestamp = datetime.now()
+    date = datetime.now().date().isoformat()
+    time = datetime.now().time().isoformat()
 
-    workout_log_sheet = sheets.spreadsheets().create(body={'properties': {'title': 'Test Sheet'}}).execute()
+    workout_log_sheet = sheets.spreadsheets().create(body={'properties': {'title': '%s %s' % (date, time)}}).execute()
     drive.files().update(fileId=workout_log_sheet['spreadsheetId'], addParents=workout_logs_folder_id).execute()
 
-    return workout_log_sheet
+    return workout_log_sheet['spreadsheetId']
