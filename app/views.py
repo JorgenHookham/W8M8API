@@ -35,6 +35,8 @@ class Workouts(APIView):
         return Response({}, status=status.HTTP_202_ACCEPTED)
 
     def get(self, request, format=None, *args, **kwargs):
+        if kwargs.get('workout_spreadsheet_id', None):
+            raise NotImplementedError()
         return Response({}, status=status.HTTP_200_OK)
 
 
@@ -44,7 +46,7 @@ class WorkoutTemplates(APIView):
     """
     def get(self, request, format=None, *args, **kwargs):
         if kwargs.get('workout_template_sheet_name', None):
-            response = []
+            raise NotImplementedError()
         else:
             response = get_workout_template_sheets()
         return Response(response, status=status.HTTP_200_OK)

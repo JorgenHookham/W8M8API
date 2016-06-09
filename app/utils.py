@@ -39,17 +39,66 @@ def get_workout_template_sheets():
     return map(lambda x: (x['properties']['sheetId'], x['properties']['title']), workout_sheets)
 
 
+def get_master_framework_sheet_id():
+    master_sheet = get_program_master_sheet()
+    workout_sheets = filter(lambda x: x['properties']['title'] == 'Frameworks', master_sheet['sheets'])
+    return map(lambda x: x['properties']['sheetId'], workout_sheets)[0]
+
+
+def get_workout_component_sheet_ids(target_spreadsheet_id):
+    sheets = get_google_sheets_service()
+    component_sheet_names = sheets.spreadsheets().values().get(spreadsheetId=target_spreadsheet_id, range='A8:A14').execute()
+    component_sheet_names = map(lambda x: x[0], component_sheet_names['values'])
+    master_sheet = get_program_master_sheet()
+    sheet_ids = []
+
+    for sheet in master_sheet['sheets']:
+        if sheet['properties']['title'] in component_sheet_names:
+            sheet_ids.append(sheet['properties']['sheetId'])
+
+    return sheet_ids
+
+
 def create_new_workout():
     sheets = get_google_sheets_service()
     drive = get_google_drive_service()
     date = datetime.now().date().isoformat()
     time = datetime.now().time().isoformat()
+    timestamp = '%s %s' % (date, time)
 
-    workout_log_sheet = sheets.spreadsheets().create(body={'properties': {'title': '%s %s' % (date, time)}}).execute()
+    # Make the new sheet
+    workout_log_sheet = sheets.spreadsheets().create(body={'properties': {'title': timestamp}}).execute()
+
+    # Move the new sheet into the workout logs folder
     drive.files().update(fileId=workout_log_sheet['spreadsheetId'], addParents=settings.WORKOUT_LOGS_FOLDER_ID).execute()
 
-    return workout_log_sheet['spreadsheetId']
+    return workout_log_sheet
 
 
-def clone_sheet_to_spreadsheet(clone_spreadsheet_id, clone_sheet_name, target_spreadsheet_id, target_sheet_name):
-    return ''
+def delete_sheet(target_spreadsheet_id, target_sheet_id):
+    sheets = get_google_sheets_service()
+    response = sheets.spreadsheets().batchUpdate(spreadsheetId=target_spreadsheet_id, body={
+        'requests': [{
+            'deleteSheet': {'sheetId': target_sheet_id}
+        }]
+    }).execute()
+    return response
+
+
+def clone_workout_sheet(clone_sheet_id, target_spreadsheet_id):
+    sheets = get_google_sheets_service()
+    new_sheet = sheets.spreadsheets().sheets().copyTo(
+        spreadsheetId=settings.MASTER_PROGRAM_SHEET_ID,
+        sheetId=clone_sheet_id,
+        body={'destinationSpreadsheetId': target_spreadsheet_id}
+    ).execute()
+    sheets.spreadsheets().batchUpdate(spreadsheetId=target_spreadsheet_id, body={
+        'requests': [{'updateSheetProperties': {
+            'properties': {
+                'sheetId': new_sheet['sheetId'],
+                'title': 'Log'
+            },
+            'fields': 'title'
+        }}]
+    }).execute()
+    return new_sheet
