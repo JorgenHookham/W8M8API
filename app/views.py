@@ -58,7 +58,33 @@ class Workouts(APIView):
     def patch(self, request, format=None, *args, **kwargs):
         # TODO: THIS METHOD
         # TODO: Accept dictionary and update rows in workout sheet.
-        return Response({}, status=status.HTTP_202_ACCEPTED)
+        d = request.data
+        rn = d.get('row_number')
+        spreadsheet_id = d.get('spreadsheet_id', None)
+        updates = []
+
+        if not spreadsheet_id:
+            return Response('No spreadsheet provided', status=status.HTTP_400_BAD_REQUEST)
+
+        if d.get('actual_weight'):
+            updates.append({'range': 'L%s' % rn, 'majorDimension': 'ROWS', 'values': [[d.get('actual_weight')]]})
+        if d.get('actual_reps'):
+            updates.append({'range': 'M%s' % rn, 'majorDimension': 'ROWS', 'values': [[d.get('actual_reps')]]})
+        if d.get('actual_start_time'):
+            updates.append({'range': 'N%s' % rn, 'majorDimension': 'ROWS', 'values': [[d.get('actual_start_time')]]})
+        if d.get('actual_stop_time'):
+            updates.append({'range': 'O%s' % rn, 'majorDimension': 'ROWS', 'values': [[d.get('actual_stop_time')]]})
+
+        sheets = get_google_sheets_service()
+        response = sheets.spreadsheets().values().batchUpdate(
+            spreadsheetId=spreadsheet_id,
+            body={
+                'valueInputOption': 'USER_ENTERED',
+                'data': updates
+            },
+        ).execute()
+
+        return Response(response, status=status.HTTP_202_ACCEPTED)
 
     def get(self, request, format=None, *args, **kwargs):
         spreadsheet_id = kwargs.get('workout_spreadsheet_id', None)
@@ -83,7 +109,7 @@ class Workouts(APIView):
                 'set_time_range': sheet_data[6][1],
                 'rest_time_range': sheet_data[7][1],
             }
-            i = 0
+            i = 2
             for row in sheet_data:
                 steps.append({
                     'row_number': i,
