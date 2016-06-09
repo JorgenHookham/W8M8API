@@ -3,7 +3,7 @@ from django.views.generic.base import View
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from W8M8.utils import get_program_master_sheet
+from app.utils import get_program_master_sheet
 
 
 class TestView(View):

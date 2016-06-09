@@ -16,8 +16,8 @@ Including another URLconf
 from django.conf.urls import include, url
 from django.contrib import admin
 from rest_framework.urlpatterns import format_suffix_patterns
-from W8M8.views import Workouts, WorkoutTemplates
-from W8M8.views import TestView
+from app.views import Workouts, WorkoutTemplates
+from app.views import TestView
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
