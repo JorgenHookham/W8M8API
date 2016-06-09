@@ -1,3 +1,4 @@
 Django==1.9.7
-wheel==0.26.0
+djangorestframework==3.3.3
 google-api-python-client==1.5.1
+wheel==0.26.0
