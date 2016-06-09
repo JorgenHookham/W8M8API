@@ -1,18 +1,7 @@
-from django.http import HttpResponse
-from django.views.generic.base import View
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from app.utils import get_program_master_sheet
-
-
-class TestView(View):
-    template_name = 'W8M8/test.html'
-
-    def get(self, request):
-        master_sheet = get_program_master_sheet()
-        import ipdb; ipdb.set_trace()
-        return HttpResponse('result')
+from app.utils import get_workout_template_sheets
 
 
 class Workouts(APIView):
@@ -54,4 +43,8 @@ class WorkoutTemplates(APIView):
     Allows access to workout templates present in the master program sheet.
     """
     def get(self, request, format=None, *args, **kwargs):
-        return Response({}, status=status.HTTP_200_OK)
+        if kwargs.get('workout_template_sheet_name', None):
+            response = []
+        else:
+            response = get_workout_template_sheets()
+        return Response(response, status=status.HTTP_200_OK)

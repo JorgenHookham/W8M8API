@@ -30,8 +30,13 @@ def get_google_drive_service():
 
 def get_program_master_sheet():
     service = get_google_sheets_service()
-    program_master_spreadsheet_id = settings.MASTER_PROGRAM_SHEET_ID
-    return service.spreadsheets().get(spreadsheetId=program_master_spreadsheet_id).execute()
+    return service.spreadsheets().get(spreadsheetId=settings.MASTER_PROGRAM_SHEET_ID).execute()
+
+
+def get_workout_template_sheets():
+    master_sheet = get_program_master_sheet()
+    workout_sheets = filter(lambda x: '#W' in x['properties']['title'], master_sheet['sheets'])
+    return map(lambda x: (x['properties']['sheetId'], x['properties']['title']), workout_sheets)
 
 
 def create_new_workout():
