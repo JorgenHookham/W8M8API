@@ -2,6 +2,11 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from app.utils import get_workout_template_sheets
+from app.utils import clone_workout_sheet
+from app.utils import create_new_workout
+from app.utils import delete_sheet
+from app.utils import get_google_sheets_service
+from datetime import datetime
 
 
 class Workouts(APIView):
@@ -26,10 +31,29 @@ class Workouts(APIView):
     """
     def post(self, request, format=None, *args, **kwargs):
         # data = request.data
-        # create new workout log sheet
-        # copy template sheet to new sheet, name it "Log"
-        # return new sheet id
-        return Response({}, status=status.HTTP_201_CREATED)
+        sheets = get_google_sheets_service()
+        new_workout = create_new_workout()
+        template_sheet_id = request.data.get('template_sheet_id', None)
+
+        if not template_sheet_id:
+            return Response('No template sheet provided', status=status.HTTP_400_BAD_REQUEST)
+
+        clone_workout_sheet(template_sheet_id, new_workout['spreadsheetId'])
+        delete_sheet(new_workout['spreadsheetId'], 0)
+
+        # Give the new sheet a date parameter
+        sheets.spreadsheets().values().update(
+            spreadsheetId=new_workout['spreadsheetId'],
+            range='A2',
+            valueInputOption='USER_ENTERED',
+            body={
+                'range': 'A2',
+                'majorDimension': 'ROWS',
+                'values': [[datetime.now().date().isoformat()]]
+            }
+        ).execute()
+
+        return Response(new_workout['spreadsheetId'], status=status.HTTP_201_CREATED)
 
     def patch(self, request, format=None, *args, **kwargs):
         return Response({}, status=status.HTTP_202_ACCEPTED)
