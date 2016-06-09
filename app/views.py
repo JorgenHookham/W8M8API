@@ -56,12 +56,48 @@ class Workouts(APIView):
         return Response(new_workout['spreadsheetId'], status=status.HTTP_201_CREATED)
 
     def patch(self, request, format=None, *args, **kwargs):
+        # TODO: THIS METHOD
+        # TODO: Accept dictionary and update rows in workout sheet.
         return Response({}, status=status.HTTP_202_ACCEPTED)
 
     def get(self, request, format=None, *args, **kwargs):
-        if kwargs.get('workout_spreadsheet_id', None):
-            raise NotImplementedError()
-        return Response({}, status=status.HTTP_200_OK)
+        spreadsheet_id = kwargs.get('workout_spreadsheet_id', None)
+        summary = {}
+        steps = []
+        if spreadsheet_id:
+            sheets = get_google_sheets_service()
+            sheet_data = sheets.spreadsheets().values().get(
+                spreadsheetId=spreadsheet_id,
+                range='C2:K200',
+                majorDimension='ROWS',
+                valueRenderOption='UNFORMATTED_VALUE',
+                dateTimeRenderOption='FORMATTED_STRING',
+            ).execute()['values']
+            summary = {
+                'muscle_groups': sheet_data[0][1],
+                'approx_duration': sheet_data[1][1],
+                'rep_range': sheet_data[2][1],
+                'speed': sheet_data[3][1],
+                'percent_of_max': sheet_data[4][1],
+                'set_count': sheet_data[5][1],
+                'set_time_range': sheet_data[6][1],
+                'rest_time_range': sheet_data[7][1],
+            }
+            i = 0
+            for row in sheet_data:
+                steps.append({
+                    'row_number': i,
+                    'name': row[3],
+                    'required': True if row[4] == 'Y' else False,
+                    'rep_range': row[5],
+                    'weight': row[6],
+                    'min_time': row[7],
+                    'max_time': row[8],
+                })
+                i += 1
+            return Response({'summary': summary, 'steps': steps}, status=status.HTTP_200_OK)
+        else:
+            return Response('No spreadsheet ID specified', status=status.HTTP_400_BAD_REQUEST)
 
 
 class WorkoutTemplates(APIView):

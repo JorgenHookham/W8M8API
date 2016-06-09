@@ -24,9 +24,9 @@ urlpatterns = [
 
 apiurlpatterns = [
     url(r'^api/workouts/$', Workouts.as_view()),
-    url(r'^api/workouts/(?P<workout_spreadsheet_id>[a-zA-Z0-9\-_ #*]+/)$', Workouts.as_view()),
+    url(r'^api/workouts/(?P<workout_spreadsheet_id>[a-zA-Z0-9\-_ #*]+)/$', Workouts.as_view()),
     url(r'^api/workout-templates/$', WorkoutTemplates.as_view()),
-    url(r'^api/workout-templates/(?P<workout_template_sheet_name>[a-zA-Z0-9\-_ #*]+/)$', WorkoutTemplates.as_view()),
+    url(r'^api/workout-templates/(?P<workout_template_sheet_name>[a-zA-Z0-9\-_ #*]+)/$', WorkoutTemplates.as_view()),
 ]
 
 apiurlpatterns = format_suffix_patterns(apiurlpatterns)
