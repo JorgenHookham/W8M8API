@@ -1,4 +1,5 @@
 Django==1.9.7
 djangorestframework==3.3.3
 google-api-python-client==1.5.1
+gunicorn==19.4.5
 wheel==0.26.0
