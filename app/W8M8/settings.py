@@ -37,6 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'W8M8',
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -114,3 +116,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
 
 STATIC_URL = '/static/'
+
+
+# Project specific variables
+GOOGLE_SECRET_JSON = os.environ.get('GOOGLE_SECRET_JSON', None)
+MASTER_PROGRAM_SHEET_ID = os.environ.get('MASTER_PROGRAM_SHEET_ID', None)
+WORKOUT_LOGS_FOLDER_ID = os.environ.get('WORKOUT_LOGS_FOLDER_ID', None)
